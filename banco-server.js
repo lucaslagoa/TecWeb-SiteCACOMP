@@ -7,6 +7,9 @@ app.use(body_parser.urlencoded({
 }))
 
 app.use(body_parser.json())
+
+app.use(express.static('public'))
+
 var mongo_cliente = require('mongodb').MongoClient
 var dbo
 
@@ -54,8 +57,11 @@ app.post('/membros',function(req,res){
     var membros = req.body;
 
     dbo.collection('membros').insertOne(membros, function(err,result){
-        if (err) throw console.log(err)
-
+        if (err){
+            res.status(409)
+            res.send("Membro já cadastrado!")
+            return 
+        }
         res.status(200)
         res.send("Membro adicionado com sucesso!")
     })
@@ -85,10 +91,12 @@ app.post('/gasto',function(req,res){
 
 app.post('/projetos',function(req,res){
     var projetos = req.body;
-
     dbo.collection('projetos').insertOne(projetos, function(err,result){
-        if (err) throw console.log(err)
-
+        if (err){
+            res.status(409)
+            res.send("Projeto já cadastrado!")
+            return 
+        }
         res.status(200)
         res.send("Projeto adicionado com sucesso!")
     })
@@ -96,10 +104,8 @@ app.post('/projetos',function(req,res){
 
 app.post('/sugestoes',function(req,res){
     var sugestoes = req.body;
-
     dbo.collection('sugestoes').insertOne(sugestoes, function(err,result){
         if (err) throw console.log(err)
-
         res.status(200)
         res.send("Sugestão adicionada com sucesso!")
     })
@@ -295,7 +301,7 @@ app.put("/sugestoes", function (req,res){
 
 //pesquisar membro por nome e saber suas infos. 
 
-app.get('/membros/nome', function(req,res){
+app.get('/membro/:id', function(req,res){
 
     var nome_membro = req.query.eq
 
@@ -325,7 +331,7 @@ app.get('/membros/cargo', function(req,res){
 
 //pesquisar reclamação por nome
 
-app.get('/reclamacoes/nome', function(req,res){
+app.get('/reclamacoes/:id', function(req,res){
 
     var nome_reclamacao = req.query.eq
 
@@ -438,7 +444,7 @@ mongo_cliente.connect('mongodb://localhost:27017/' , { useNewUrlParser : true },
     if (err) throw err
     dbo = db.db('CACOMP')
 
-    app.listen(3001,function(){
+    app.listen(3003,function(){
         console.log('Funcionando...')
     })
 })
