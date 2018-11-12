@@ -14,7 +14,7 @@ mongo_cliente.connect('mongodb://localhost:27017/' , { useNewUrlParser : true },
             {nome: 'Jose', email: 'jose@gmail.com', cargo:'Tesoureiro'}
         ]
         
-        db.members.createIndex( { "email": 1 }, { unique: true } )
+
 
         dbo.collection('membros').insertMany(membros, function(err,res){
             if (err) throw err

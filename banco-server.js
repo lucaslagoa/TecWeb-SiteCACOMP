@@ -1,6 +1,9 @@
 var express = require('express')
 var app = express()
 var body_parser = require('body-parser')
+var cors = require('cors')
+app.use(cors())
+
 
 app.use(body_parser.urlencoded({
     extended: true
@@ -241,6 +244,7 @@ app.delete('/sugestoes/nome', function(req,res){
 
 app.put("/membros", function (req,res){
     var membros = req.body
+    delete membros._id;
     var id = { nome: membros.nome };
 
     dbo.collection('membros').updateOne(id, {$set : membros}, function(err,result){
@@ -444,7 +448,7 @@ mongo_cliente.connect('mongodb://localhost:27017/' , { useNewUrlParser : true },
     if (err) throw err
     dbo = db.db('CACOMP')
 
-    app.listen(3003,function(){
+    app.listen(3000,function(){
         console.log('Funcionando...')
     })
 })
