@@ -5,13 +5,20 @@ mongo_cliente.connect('mongodb://localhost:27017/' , { useNewUrlParser : true },
 
     var dbo = db.db('CACOMP')
 
+    dbo.collection('membros').remove({},function(err, result) {});
+    dbo.collection('admin').remove({},function(err, result) {})
+    dbo.collection('reclamacoes').remove({},function(err, result) {});
+    dbo.collection('gasto').remove({},function(err, result) {});
+    dbo.collection('projetos').remove({},function(err, result) {});
+    dbo.collection('sugestoes').remove({},function(err, result) {});
+
     dbo.createCollection('membros',function(err,res){
         if (err) throw err
         
         var membros = [
-            {nome: 'Joao', email: 'joao@gmail.com', cargo: 'Secretario'},
-            {nome: 'Maria',email: 'maria@gmail.com', cargo:'Presidente'},
-            {nome: 'Jose', email: 'jose@gmail.com', cargo:'Tesoureiro'}
+            {nome: 'Jonas', email: 'joao@gmail.com', cargo: 'Secretario',password: '123'},
+            {nome: 'Maria',email: 'maria@gmail.com', cargo:'Presidente',password: '123'},
+            {nome: 'Jose', email: 'jose@gmail.com', cargo:'Tesoureiro',	password: '123'}
         ]
         
 
@@ -22,6 +29,23 @@ mongo_cliente.connect('mongodb://localhost:27017/' , { useNewUrlParser : true },
             db.close()
         })
     })
+
+    dbo.createCollection('admin',function(err,res){
+        if (err) throw err
+        
+        var admin = [
+            {nome: 'Lagoa',password: '123'}
+        ]
+        
+
+
+        dbo.collection('admin').insertMany(admin, function(err,res){
+            if (err) throw err
+            console.log("Admin inscritos!")
+            db.close()
+        })
+    })    
+
 
     dbo.createCollection('reclamacoes',function(err,res){
         if (err) throw err

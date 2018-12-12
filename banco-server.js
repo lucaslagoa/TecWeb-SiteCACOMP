@@ -13,8 +13,63 @@ app.use(body_parser.json())
 
 app.use(express.static('public'))
 
+var jwt = require('jsonwebtoken');
+
 var mongo_cliente = require('mongodb').MongoClient
 var dbo
+
+
+app.post('/login', function(req, res) {
+    var user = req.body;
+
+    dbo.collection('membros').findOne({ nome: user.nome }, function(err, membros) {
+        if (err) return res.status(500).send();
+
+        if (!membros) {
+            dbo.collection('admin').findOne({ nome: user.nome }, function(err, admin) {
+                if (!admin) return res.status(404).send();
+
+                if ( admin.password == user.password ) {
+                    var token = jwt.sign({ id: admin._id }, 'supersecret', {
+                        expiresIn: 86400
+                    });
+
+                    res.status(200);
+                    res.send({ token: token, tipo: 'admin' });
+                } else {
+                    return res.status(401).send({ token: null, tipo: null });
+                }
+            });
+        } else {
+            if ( membros.password == user.password ) {
+                var token = jwt.sign({ id: membros._id }, 'supersecret', {
+                    expiresIn: 86400
+                });
+
+                res.status(200);
+                res.send({ token: token, tipo: 'membros' });
+            } else {
+                return res.status(401).send({ token: null, tipo: null });
+            }
+        }
+    });
+});
+
+function verificaToken(req, res, next) {
+
+    var token = req.headers['x-access-token'];
+
+    if (!token)
+        return res.status(403).send({ auth: false, message: 'Nenhum token disponvível.' });
+
+    jwt.verify(token, 'supersecret', function(err, decoded) {
+        if (err)
+            return res.status(500).send({ auth: false, message: 'Erro de autenticação.' });
+
+        req.userId = decoded.id;
+        next();
+    });
+}
 
 app.get('/membros', function(req,res){
     dbo.collection('membros').find().toArray(function(err,membros){
@@ -257,6 +312,7 @@ app.put("/membros", function (req,res){
 
 app.put("/reclamacoes", function (req,res){
     var reclamacoes = req.body
+    delete reclamacoes._id;
     var id = { nome: reclamacoes.nome };
 
     dbo.collection('reclamacoes').updateOne(id, {$set : reclamacoes}, function(err,result){
@@ -269,6 +325,7 @@ app.put("/reclamacoes", function (req,res){
 
 app.put("/gasto", function (req,res){
     var gasto = req.body
+    delete gasto._id;
     var id = { nomeGasto: gasto.nomeGasto };
 
     dbo.collection('gasto').updateOne(id, {$set : gasto}, function(err,result){
@@ -281,6 +338,7 @@ app.put("/gasto", function (req,res){
 
 app.put("/projetos", function (req,res){
     var projetos = req.body
+    delete projetos._id;
     var id = { nomeProjeto: projetos.nomeProjeto };
 
     dbo.collection('projetos').updateOne(id, {$set : projetos}, function(err,result){
@@ -293,6 +351,7 @@ app.put("/projetos", function (req,res){
 
 app.put("/sugestoes", function (req,res){
     var sugestoes = req.body
+    delete sugestoes._id;
     var id = { nomeSugestao: sugestoes.nomeSugestao };
 
     dbo.collection('sugestoes').updateOne(id, {$set : sugestoes}, function(err,result){
